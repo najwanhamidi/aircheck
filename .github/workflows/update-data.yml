@@ -1,0 +1,39 @@
+name: Update air-quality data
+
+# Every hour: fetch the official Malaysia DOE (APIMS) readings, which browsers can't load
+# directly (the DOE server blocks other websites), and log aqicn station readings so the
+# app can draw station history. Results are committed to data/ and served by GitHub Pages.
+on:
+  schedule:
+    - cron: "12 * * * *"   # ~12 min past every hour (DOE publishes on the hour)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Fetch data
+        env:
+          WAQI_TOKEN: ${{ secrets.WAQI_TOKEN }}
+        run: node scripts/update-data.mjs
+      - name: Commit if changed
+        run: |
+          git config user.name "aircheck-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          git commit -m "data: hourly update $(date -u +%Y-%m-%dT%H:%MZ)"
+          git pull --rebase --autostash || true
+          git push
