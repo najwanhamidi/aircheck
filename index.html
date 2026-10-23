@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AirCheck</title>
+<meta name="description" content="Live air quality (AQI, PM2.5) for Perai, Kuala Lumpur and Alor Setar with trends, forecast and running guidance.">
+<meta name="theme-color" content="#0f7b8a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="AirCheck">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body data-layout="mobile">
+<div class="app">
+  <header class="top">
+    <div class="topbar">
+      <div class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h8"/></svg></span><span class="brand-text">AirCheck</span></div>
+      <span id="updated" style="margin-left:auto">Loading…</span>
+      <button class="icon-btn" id="btn-refresh" data-act="refresh" aria-label="Refresh readings" title="Refresh readings"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button>
+      <button class="icon-btn" data-act="stations" aria-label="All stations in Malaysia" title="All stations in Malaysia"><svg viewBox="0 0 24 24"><path d="M12 21s-6-5.3-6-10a6 6 0 0 1 12 0c0 4.7-6 10-6 10z"/><circle cx="12" cy="11" r="2"/><path d="M3 21h18"/></svg></button>
+      <button class="icon-btn" data-act="search" aria-label="Search location" title="Search location"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      <button class="icon-btn" data-act="settings" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+    </div>
+    <div class="loc-block"><h1 id="loc-title">Perai</h1><div id="loc-sub"></div></div>
+    <div id="fav-action" hidden></div>
+    <nav id="favs" aria-label="Favourite locations"></nav>
+  </header>
+
+  <div id="warnings"></div>
+
+  <section class="card" id="hero" data-skel aria-live="polite"></section>
+  <section class="card" id="run" data-skel></section>
+
+  <section class="card" id="history-card">
+    <div class="sec-head"><h2>Past hours</h2>
+      <div class="seg" id="hist-range" role="group" aria-label="History range">
+        <button data-range="6">6h</button><button data-range="12">12h</button><button data-range="24">24h</button><button data-range="48">48h</button>
+      </div></div>
+    <div class="chart-title"><h3>Overall AQI</h3></div>
+    <div class="chart-box"><canvas id="chart-overall" aria-label="Overall AQI over past hours" role="img"></canvas></div>
+    <div class="chart-title"><h3>PM2.5</h3>
+      <div class="seg" id="pm25-unit" role="group" aria-label="PM2.5 unit"><button data-range="aqi">AQI</button><button data-range="ug">µg/m³</button></div></div>
+    <div class="chart-box"><canvas id="chart-pm25" aria-label="PM2.5 over past hours" role="img"></canvas></div>
+    <p class="note" id="hist-note"></p>
+    <details class="table"><summary>Hourly data table</summary><div class="tbl-wrap" id="hist-table"></div></details>
+  </section>
+
+  <section class="card" id="forecast-card">
+    <div class="sec-head"><h2>Forecast</h2>
+      <div class="seg" id="fc-range" role="group" aria-label="Forecast range">
+        <button data-range="24">24h</button><button data-range="48">48h</button><button data-range="72">72h</button><button data-range="96">4 days</button>
+      </div></div>
+    <div class="chart-box"><canvas id="chart-fc" aria-label="AQI forecast" role="img"></canvas></div>
+    <p class="note" id="fc-note"></p>
+    <div id="fc-days"></div>
+  </section>
+
+  <section class="card" id="readings" data-skel></section>
+  <section class="card" id="sources" data-skel></section>
+
+  <footer class="foot">
+    <div>Data: aqicn.org / World Air Quality Index Project, Malaysia DOE (APIMS), Copernicus CAMS &amp; weather via Open‑Meteo.</div>
+    <div>Running guidance is general information, not medical advice. · <a href="desktop.html">Desktop version</a></div>
+  </footer>
+</div>
+
+<dialog id="dlg-search" aria-label="Choose a location">
+  <div class="dlg-head"><h2>Choose a location</h2><button class="icon-btn" data-act="close" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="tabs" role="tablist">
+    <button role="tab" data-tab="search" aria-selected="true">Search</button>
+    <button role="tab" data-tab="stations" aria-selected="false">All stations in Malaysia</button>
+  </div>
+  <div class="dlg-body" data-panel="search">
+    <input id="q" class="input" type="search" placeholder="Town, city or station…" autocomplete="off" enterkeyhint="search">
+    <div class="row"><button class="btn" data-act="locate"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg> Use my location</button></div>
+    <div id="results"></div>
+  </div>
+  <div class="dlg-body" data-panel="stations" hidden>
+    <input id="st-filter" class="input" type="search" placeholder="Filter by station, town or state…" autocomplete="off">
+    <div class="row st-tools">
+      <div class="seg" id="st-src" role="group" aria-label="Station source"><button data-src="doe">Official DOE</button><button data-src="waqi">aqicn</button></div>
+      <button class="btn small ghost" data-act="st-expand">Expand all</button>
+    </div>
+    <p class="muted small" id="st-note"></p>
+    <div id="st-list"></div>
+  </div>
+</dialog>
+
+<dialog id="dlg-settings" aria-label="Settings">
+  <div class="dlg-head"><h2>Settings</h2><button class="icon-btn" data-act="close" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="dlg-body">
+    <div class="field">
+      <label for="tok">aqicn (WAQI) API token</label>
+      <input id="tok" class="input" type="text" autocomplete="off" spellcheck="false" placeholder="Paste your token">
+      <p class="muted small">Free from <a href="https://aqicn.org/data-platform/token/" target="_blank" rel="noopener">aqicn.org/data-platform/token</a>. Stored only on this device. <span id="tok-cfg" hidden>A token is also set in config.js.</span></p>
+      <div class="row"><button class="btn" data-act="test-token">Test</button><button class="btn primary" data-act="save-token">Save</button><span id="tok-status" class="small"></span></div>
+    </div>
+    <div class="set-sec">
+      <label class="switch"><input type="checkbox" id="set-sens"><span>Sensitive mode (asthma, heart or lung condition) — stricter running limits</span></label>
+    </div>
+    <div class="set-sec"><p id="set-fav4"></p></div>
+    <div class="set-sec">
+      <p class="muted small">AQI scales: aqicn PM2.5 / pollutant values use the US EPA AQI (same breakpoints as aqicn.org). DOE values are Malaysia's official Air Pollutant Index (24‑hour running average). Concentrations derived from an integer AQI are accurate to about ±0.3 µg/m³.</p>
+    </div>
+  </div>
+</dialog>
+
+<script src="config.js"></script>
+<script src="vendor/chart.umd.min.js"></script>
+<script src="js/stations.js"></script>
+<script src="js/core.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
