@@ -1,1 +1,1 @@
-{"stations":{},"format":"[epochSeconds, aqi, pm25 sub-index (US AQI), pm10 sub-index]"}
+{"stations":{"2581":[[1792753200,53,58,18]],"2600":[[1792756800,77,74,28]],"5780":[[1792756800,127,127,52]]},"format":"[epochSeconds, aqi, pm25 sub-index (US AQI), pm10 sub-index]","updated":"2026-10-23T13:03:50.677Z"}
